@@ -178,107 +178,107 @@ Web服务(IIS, Apache)在获得身份授权后对静态资源的处理方式是�
 
 #### -API TIP:21/30-
 
-*Got stuck during an API pentest? Expand the attack surface! 
-Use http://archive.com, find old versions of the web-app and explore new API endpoints. 
-Can't use the client? scan the .js files for URLs. Some of them are API endpoints.*
+*在做API渗透的时候卡壳了? 扩大你的攻击面! 
+使用 http://archive.com, 来寻找旧版本的web应用并探索新的API入口. 
+不能使用客户端？扫描.js文件中的URL。其中一些是API入口.*
 
 --------------------------------------------------------------------------------------------------------------------------
 
 #### -API TIP:22/31-
 
-*APIs tend to leak PII by design.
-BE engineers return raw JSON objects and rely on FE engineers to filter out sensitive data.
-Found a sensitive resource (e.g, `receipt`)? Find all the EPs that return it: `/download_receipt`,`/export_receipt`, etc..*
+*API在设计上倾向于泄露PII.
+后端工程师返回原始JSON对象，依靠前端工程师对敏感数据进行过滤.
+找到一个敏感字眼 (例如, `receipt（收据）`)? 寻找所有返回它的入口: `/download_receipt`,`/export_receipt`, 等等*
 
-> Some of the endpoints might leak excessive data that should not be accessible by the user.
+> 一些入口可能会泄露过多的数据，而这些数据不应该被用户访问.
 
-> This is an example for OWASP Top 10 For APIs - #3 - Excessive Data Exposure
+> 这是OWASP Top 10 For APIs --#3--过度数据暴露的例子
 --------------------------------------------------------------------------------------------------------------------------
 
 #### -API TIP:23/31-
 
-*Found a way to download arbitrary files from a web server? 
-Shift the test from black-box to white-box.
-Download the source code of the app (DLL files: use IL-spy; Compiled Java - use Luyten)
-Read the code and find new issues!*
+*找到了从Web服务器下载任意文件的方法？ 
+将测试从黑盒转为白盒。
+下载应用程序的源代码 (DLL文件：使用IL-spy；编译后的Java文件--使用Luyten)
+阅读代码以发现新问题!*
 
 --------------------------------------------------------------------------------------------------------------------------
 
 #### -API TIP:24/31-
 
-*Got stuck during an API pentest? Expand your attack surface!
-Remember: developers often disable security mechanisms in non-production environments (qa/staging/etc); 
-Leverage this fact to bypass AuthZ, AuthN, rate limiting & input validation.*
+*在做API渗透的时候卡壳了? 扩大你的攻击面! 
+请记住：开发人员经常在非生产环境中禁用安全机制（qa/staging/等）; 
+利用这一事实，绕过身份认证、授权、速率限制和输入验证.*
 
 --------------------------------------------------------------------------------------------------------------------------
 
 #### -API TIP:25/31-
 
-*Found an "export to PDF" feature? 
-There's a good chance the developers use an external library to convert HTML --> PDF behind the scenes.
-Try to inject HTML elements and cause "Export Injection".*
+*找到了一个导出为PDF的功能? 
+开发人员很有可能在后端使用了外部库来将HTML转换为PDF.
+尝试注入HTML元素，导致 "导出注入".*
 
-> Learn more about Export Injection: [https://medium.com/@inonst/export-injection-2eebc4f17117](https://medium.com/@inonst/export-injection-2eebc4f17117) 
+> 通过以下链接进一步了解导出注入: [https://medium.com/@inonst/export-injection-2eebc4f17117](https://medium.com/@inonst/export-injection-2eebc4f17117) 
 --------------------------------------------------------------------------------------------------------------------------
 
 #### -API TIP:26/31-
 
-*Looking for BOLA (IDOR) in APIs? got 401/403 errors?
-AuthZ bypass tricks:*
-* Wrap ID with an array` {“id”:111}` --> `{“id”:[111]}`
-* JSON wrap `{“id”:111}` --> `{“id”:{“id”:111}}`
-* Send ID twice `URL?id=<LEGIT>&id=<VICTIM>`
-* Send wildcard `{"user_id":"*"}`
+*寻找API中的BOLA (IDOR)? 得到了 401/403 错误?
+身份认证绕过技巧:*
+* 用一个数组包装ID` {“id”:111}` --> `{“id”:[111]}`
+* JSON 包装 `{“id”:111}` --> `{“id”:{“id”:111}}`
+* 发送两次ID `URL?id=<LEGIT>&id=<VICTIM>`
+* 发送通配符 `{"user_id":"*"}`
  
-> In some cases, the AuthZ mechanism expects a plain string (an ID in this case), and if it receives a JSON instead it won't perform the AuthZ checks. Then, when the input goes to the data fetching component, it might be okay with a JSON instead of string(e.g: it flattens the JSON)
+> 在某些情况下，身份认证机制期待一个纯字符串（在这种情况下是一个ID）, 如果它收到的是JSON而不是字符串，它就不会执行身份认证检查. 那么，当输入到数据获取组件时，它可能会接受JSON而不是字符串(例如：它将JSON扁平化处理)
 --------------------------------------------------------------------------------------------------------------------------
 
 #### -API TIP:27/31-
 
-*BE Servers no longer responsible for protecting against XSS.
-APIs don't return HTML, but JSON instead.
-If API returns XSS payload? - 
-E.g: `{"name":"In<script>alert(21)</script>on}`
-That's fine! The protection always needs to be on the client side*
+*后端服务器不再负责保护XSS的安全.
+API不返回HTML，而是返回JSON。
+如果API返回XSS payload? - 
+例如: `{"name":"In<script>alert(21)</script>on}`
+这就好了! 保护总是要在客户端实现*
 
 --------------------------------------------------------------------------------------------------------------------------
 
 #### -API TIP:28/31-
 
-*Pentest for .NET apps? Found a param containing file path/name? Developers sometimes use "Path.Combine(path_1,path_2)" to create full path. Path.Combine has weird behavior: if param#2 is absolute path, then param#1 is ignored.*
-##### Leverage it to control the path
+*对.NET应用程序进行渗透测试? 找到一个包含文件路径/名称的参数? 开发者有时会使用"Path.Combine(path_1,path_2)"来创建完整的路径. Path.Combine有一种奇怪的行为: 如果param#2是绝对路径，则忽略param#1.*
+##### 利用它来控制路径
 
-> Learn more: [https://www.praetorian.com/blog/pathcombine-security-issues-in-aspnet-applications](https://www.praetorian.com/blog/pathcombine-security-issues-in-aspnet-applications)
+> 了解更多: [https://www.praetorian.com/blog/pathcombine-security-issues-in-aspnet-applications](https://www.praetorian.com/blog/pathcombine-security-issues-in-aspnet-applications)
 --------------------------------------------------------------------------------------------------------------------------
 
 #### -API TIP:29/30-
 
-*APIs expose the underlying implementation of the app.
-Pentesters should leverage this fact to better understand users, roles, resources & correlations between them and find cool vulnerabilities & exploits.
-Always be curious about the API responses.*
+*API暴露了应用程序的底层实现.
+渗透测试人员应该利用这一事实来更好地了解用户、角色、资源和他们之间的相关性，并找到很酷的漏洞和利用方式.
+总是对API响应感到好奇.*
 
 --------------------------------------------------------------------------------------------------------------------------
 
 #### -API TIP:30/31-
 
-*Got stuck during an API pentest? Expand your attack surface! 
-If the API has mobile clients, download old versions of the APK file to explore old/legacy functionality and discover new API endpoints.*
+*在做API渗透的时候卡壳了? 扩大你的攻击面!! 
+如果API有移动客户端，请下载旧版本的APK文件，以探索旧的/遗留的功能来发现新的API入口.*
 
-> Remember: companies don’t always implement security mechanisms from day one && DevOps engineers don’t often deprecate old APIs. Leverage these facts to find shadow API endpoints that don’t implement security mechanism (authorization, input filtering & rate limiting)
+> 请记住：公司并不总是从第一天开始就实施安全机制，并且DevOps工程师并不经常废止旧的API。利用这些事实来寻找没有实施安全机制的影子API入口（授权、输入过滤和速率限制）
 
-> Download old APK versions of android apps: [https://apkpure.com](https://apkpure.com)
+> 通过该网站可以下载旧APK版本的安卓应用程序: [https://apkpure.com](https://apkpure.com)
 --------------------------------------------------------------------------------------------------------------------------
 
 #### -API TIP: 31/31-
 
-*Found a `limit` / `page` param? (e.g: `/api/news?limit=100`) It might be vulnerable to Layer 7 DoS. Try to send a long value (e.g: `limit=999999999`) and see what happens :)*
+*发现了 `limit` / `page` 参数? (例如: `/api/news?limit=100`) 它可能容易受到第7层DoS的影响。尝试发送一个长的值（例如：`limit=999999999`），看看会发生什么 :)*
 
 --------------------------------------------------------------------------------------------------------------------------
 
-## Source
+## 来源
 
-#### All of this information is taken from twitter of Inon Shkedy
-##### Links: 
+#### 所有这些信息都来自于Inon Shkedy的Twitter
+##### 链接: 
 * [Inon Shkedy](https://twitter.com/inonshkedy)
 * [Traceableai](https://twitter.com/traceableai/)
 * [OWASP API PROJECT](https://github.com/OWASP/API-Security)
